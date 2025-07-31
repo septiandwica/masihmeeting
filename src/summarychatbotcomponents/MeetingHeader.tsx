@@ -13,7 +13,7 @@ export const MeetingHeader: React.FC<MeetingHeaderProps> = ({
   duration,
 }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg px-12 py-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 border-gray-200 rounded-lg px-12 py-6 mb-6">
       <div className="flex items-center justify-between">
         {/* Left side - Icon and content */}
         <div className="flex items-center space-x-3">
@@ -24,8 +24,12 @@ export const MeetingHeader: React.FC<MeetingHeaderProps> = ({
 
           {/* Title and date */}
           <div>
-            <h1 className="text-sm font-medium text-gray-900">{title}</h1>
-            <p className="text-xs text-gray-500 flex items-center">📅 {date}</p>
+            <h1 className="text-sm font-medium dark:text-amber-50 text-gray-900">
+              {title}
+            </h1>
+            <p className="text-xs dark:text-amber-50 text-gray-500 flex items-center">
+              📅 {date}
+            </p>
           </div>
         </div>
 

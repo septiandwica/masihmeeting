@@ -129,22 +129,26 @@ export const UnifiedSummaryChat: React.FC<UnifiedSummaryChatProps> = ({
   };
 
   const renderSummarySection = (section: SummarySection) => (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-4">
+    <div className="bg-white rounded-lg border dark:border-0 border-gray-200 p-6 mb-4 dark:bg-gray-700">
       <div className="flex items-center space-x-3 mb-4">
         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
           {section.icon}
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          {section.title}
+        </h3>
       </div>
 
       {section.decisions.length > 0 && (
         <div className="mb-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Decisions:</h4>
+          <h4 className="text-sm font-medium text-gray-700 dark:text-white mb-2">
+            Decisions:
+          </h4>
           <ul className="space-y-2">
             {section.decisions.map((decision, index) => (
               <li
                 key={index}
-                className="text-sm text-gray-600 flex items-start"
+                className="text-sm text-gray-600 dark:text-white flex items-start"
               >
                 <span className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                 {decision}
@@ -156,14 +160,14 @@ export const UnifiedSummaryChat: React.FC<UnifiedSummaryChatProps> = ({
 
       {section.actionItems.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2">
+          <h4 className="text-sm font-medium dark:text-white text-gray-700 mb-2">
             Action Items:
           </h4>
           <ul className="space-y-2">
             {section.actionItems.map((item, index) => (
               <li
                 key={index}
-                className="text-sm text-gray-600 flex items-start"
+                className="text-sm dark:text-white text-gray-600 flex items-start"
               >
                 <span className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                 {item}
@@ -176,9 +180,11 @@ export const UnifiedSummaryChat: React.FC<UnifiedSummaryChatProps> = ({
   );
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
-      <div className="p-6 border-b border-gray-200">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Summary</h2>
+    <div className="bg-white rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-amber-50">
+      <div className="p-6 border-b border-gray-200 dark:border-0">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2 dark:text-amber-50">
+          Summary
+        </h2>
       </div>
 
       <div className="p-6 max-h-[750px] overflow-y-auto" ref={chatContainerRef}>
@@ -221,8 +227,8 @@ export const UnifiedSummaryChat: React.FC<UnifiedSummaryChatProps> = ({
                     <div
                       className={`rounded-lg p-3 ${
                         message.type === "user"
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-800"
+                          ? "bg-blue-500  dark:bg-gray-700 text-white"
+                          : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-white"
                       }`}
                     >
                       <p className="text-sm">{message.content}</p>
@@ -275,7 +281,10 @@ export const UnifiedSummaryChat: React.FC<UnifiedSummaryChatProps> = ({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 border-t border-gray-200">
+      <form
+        onSubmit={handleSubmit}
+        className="p-6 border-t border-gray-200 dark:border-0"
+      >
         <div className="flex items-center space-x-3">
           <input
             ref={inputRef}

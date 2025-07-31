@@ -25,7 +25,7 @@ export default function Pricing() {
     {
       title: "Starter",
       subtitle: "PRO",
-      price: "$19",
+      price: "$19.99",
       period: "month",
       description: 'Better experience with "MasiMeeting"',
       features: [
@@ -43,7 +43,7 @@ export default function Pricing() {
     {
       title: "Starter",
       subtitle: "BUSINESS",
-      price: "$49",
+      price: "$49.99",
       period: "month",
       description: 'For best experience with "MasiMeeting"',
       features: [
@@ -61,11 +61,14 @@ export default function Pricing() {
   ];
 
   return (
-    <section id="pricing" className="py-20 bg-gray-50">
+    <section
+      id="pricing"
+      className="py-20 min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             SELECT THE BEST PLAN
             <br />
             FOR YOUR NEEDS

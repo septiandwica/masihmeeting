@@ -29,25 +29,29 @@ export const QuizSection: React.FC<QuizSectionProps> = ({
   const selectedAnswer = userAnswers[question.id];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="dark:bg-gray-800 bg-white rounded-lg border dark:border-gray-700 border-gray-200 p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Quiz</h3>
-        <span className="text-sm text-gray-500">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-amber-50">
+          Quiz
+        </h3>
+        <span className="dark:text-amber-50 text-sm text-gray-500">
           {currentQuestion + 1}/{questions.length}
         </span>
       </div>
 
       <div className="mb-6">
-        <p className="text-gray-800 mb-4">{question.question}</p>
+        <p className="dark:text-amber-50 text-gray-800 mb-4">
+          {question.question}
+        </p>
         <div className="space-y-3">
           {question.options.map((option) => (
             <button
               key={option.id}
               onClick={() => onAnswerSelect(question.id, option.id)}
-              className={`w-full text-left p-3 rounded-lg border transition-colors ${
+              className={`dark:text-amber-50 w-full text-left p-3 rounded-lg border transition-colors ${
                 selectedAnswer === option.id
-                  ? "border-blue-500 bg-blue-50 text-blue-900"
-                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  ? "border-blue-500 bg-blue-50 text-blue-900 dark:border-0"
+                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 dark:border-0 dark:hover:bg-gray-600"
               }`}
             >
               <div className="flex items-center space-x-3">
@@ -62,7 +66,9 @@ export const QuizSection: React.FC<QuizSectionProps> = ({
                     <CheckCircle size={16} className="text-white" />
                   )}
                 </span>
-                <span className="font-medium">{option.id.toUpperCase()}.</span>
+                <span className="font-medium dark:text-amber-50">
+                  {option.id.toUpperCase()}.
+                </span>
                 <span>{option.text}</span>
               </div>
             </button>
@@ -74,7 +80,7 @@ export const QuizSection: React.FC<QuizSectionProps> = ({
         <button
           onClick={onPreviousQuestion}
           disabled={currentQuestion === 0}
-          className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="dark:text-amber-50 dark:hover:bg-gray-600 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Previous
         </button>

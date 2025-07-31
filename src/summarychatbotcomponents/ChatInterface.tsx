@@ -81,7 +81,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               >
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    message.type === "user" ? "bg-blue-500" : "bg-gray-200"
+                    message.type === "user"
+                      ? "bg-blue-500 dark:bg-gray-500"
+                      : "bg-gray-200"
                   }`}
                 >
                   {message.type === "user" ? (
@@ -93,8 +95,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <div
                   className={`rounded-lg p-3 ${
                     message.type === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-800"
+                      ? "dark:bg-gray-500 bg-blue-500 text-white"
+                      : "dark:bg-gray-500 bg-gray-100 text-gray-800"
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>

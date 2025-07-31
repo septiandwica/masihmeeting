@@ -161,7 +161,7 @@ const SummaryChat: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="border dark:shadow-white bg-white dark:bg-gray-900">
       <div className="max-w-7xl mx-auto py-8">
         <MeetingHeader
           title="Client Call - ProjectX.mp3"

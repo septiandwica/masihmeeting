@@ -25,21 +25,25 @@ const getFileIcon = (type: string) => {
 
 export const RecentFiles: React.FC<RecentFilesProps> = ({ files }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Files</h3>
+    <div className="dark:bg-gray-800 bg-white rounded-lg border border-gray-200 p-6 dark:border-gray-700">
+      <h3 className="text-lg font-semibold dark:text-amber-50 text-gray-900 mb-4">
+        Recent Files
+      </h3>
       <div className="space-y-3">
         {files.map((file) => (
           <div
             key={file.id}
-            className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+            className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors dark:hover:bg-gray-600"
           >
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                 {getFileIcon(file.type)}
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm font-medium text-gray-900 dark:text-amber-50">
+                  {file.name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-amber-50">
                   Duration: {file.duration}
                 </p>
               </div>

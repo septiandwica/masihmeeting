@@ -1,5 +1,5 @@
 import React from "react";
-import { FileText, Trash2 } from "lucide-react";
+import { Download, FileText, Trash2 } from "lucide-react";
 
 interface MeetingHeaderProps {
   title: string;
@@ -35,6 +35,9 @@ export const MeetingHeader: React.FC<MeetingHeaderProps> = ({
 
         {/* Right side - Delete button */}
         <div className="flex items-center">
+          <button className="w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-md flex items-center justify-center transition-colors group mr-2">
+            <Download className="w-4 h-4 text-blue-500 group-hover:text-blue-600" />
+          </button>
           <button className="w-8 h-8 bg-red-50 hover:bg-red-100 rounded-md flex items-center justify-center transition-colors group">
             <Trash2 className="w-4 h-4 text-red-500 group-hover:text-red-600" />
           </button>

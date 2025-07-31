@@ -23,3 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 .env
+backend
+masihmeeting_be

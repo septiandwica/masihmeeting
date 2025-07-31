@@ -5,13 +5,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 
 const Header: React.FC = () => {
-  const { user, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();  // Use user and logout from AuthContext
+  const { isDark, toggleTheme } = useTheme();  // Use theme from ThemeContext
   const navigate = useNavigate();
 
+  // Handle logout
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    logout();  // Call logout function from AuthContext
+    navigate('/');  // Redirect to the homepage after logout
   };
 
   return (
@@ -51,6 +52,7 @@ const Header: React.FC = () => {
           </nav>
 
           <div className="flex items-center space-x-4">
+            {/* Theme toggle button */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -58,6 +60,7 @@ const Header: React.FC = () => {
               {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
 
+            {/* If user is logged in, show their name and logout button */}
             {user ? (
               <div className="flex items-center space-x-3">
                 <Link
@@ -65,7 +68,7 @@ const Header: React.FC = () => {
                   className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 >
                   <User className="h-5 w-5" />
-                  <span className="hidden sm:block">{user.name}</span>
+                  <span className="hidden sm:block">{user.name}</span> {/* Display name only when logged in */}
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -75,6 +78,7 @@ const Header: React.FC = () => {
                 </button>
               </div>
             ) : (
+              // If user is not logged in, show "Sign In" button
               <Link
                 to="/login"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"

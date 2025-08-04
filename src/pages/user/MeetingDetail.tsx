@@ -452,14 +452,13 @@ const MeetingDetailPage = () => {
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Recent Files
+                Recent Transcription
               </h3>
               <div className="overflow-y-auto max-h-72">
                  <div className="space-y-4">
                 {recentTranscriptions.map((item) => (
                   <Link to={`/dashboard/meeting/${item._id}`} key={item._id}>
                     {" "}
-                    {/* Link to MeetingDetail */}
                     <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors my-4">
                       <div className="flex items-center space-x-4 my-2">
                         <div

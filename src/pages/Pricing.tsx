@@ -1,21 +1,23 @@
 import React from 'react';
 import PricingCard from '../components/PricingCard';
 import Hero from '../components/Hero';
+import { useNavigate } from 'react-router-dom';
 
 const PricingPage: React.FC = () => {
+    const navigate = useNavigate();
   const handleGetStarted = () => {
     console.log('Get Started clicked');
-    // Handle navigation or action
+    navigate('/register'); 
   };
 
   const handleStartTrial = () => {
     console.log('Start Trial clicked');
-    // Handle navigation or action
+    navigate('/register');
   };
 
   const handleContactSales = () => {
     console.log('Contact Sales clicked');
-    // Handle navigation or action
+    navigate('/register');
   };
 
   return (

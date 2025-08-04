@@ -66,20 +66,18 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        {/* Floating Registration Success Alert */}
         {showRegistrationAlert && (
           <div className="fixed top-4 right-4 z-50 w-80 p-4 rounded-lg shadow-mdtransition-all opacity-100 duration-300 transform translate-y-0">
             <Alert
               type="success"
               title="Success!"
-              message="Registration successful. Please log in!"
+              message="Registration successful. Please Check Your Email to Verify your Account!"
               dismissible={true}
               onClose={() => setShowRegistrationAlert(false)}
             />
           </div>
         )}
 
-        {/* Floating Email Verified Alert */}
         {showVerificationAlert && (
           <div className="fixed top-4 right-4 z-50 w-80 p-4 rounded-lg shadow-mdtransition-all opacity-100 duration-300 transform translate-y-0">
             <Alert

@@ -2,12 +2,13 @@ import React from "react";
 import { Zap, Users } from "lucide-react";
 import Card from "../components/FeaturedCard";
 import Hero from "../components/Hero";
+import CallToAction from "../components/CallToAction";
 
 const FeaturesPage: React.FC = () => {
   return (
     <>
     <Hero />
- <div className="h-screen bg-white dark:bg-gray-900 transition-colors duration-300 flex items-center justify-center">
+ <div className=" bg-white dark:bg-gray-900 transition-colors duration-300 flex items-center justify-center">
       <section className="py-24 bg-white dark:bg-gray-900 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -56,7 +57,9 @@ const FeaturesPage: React.FC = () => {
           </div>
         </div>
       </section>
+
     </div>
+    <CallToAction />
     </>
    
   );

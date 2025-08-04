@@ -1,7 +1,7 @@
 import axios from "axios";
 
 axios.defaults.withCredentials = true; 
-const API_URL = "http://localhost:3000/auth"; // Sesuaikan dengan URL API Anda
+const API_URL = "http://localhost:3000/auth"; 
 
 // Register user
 export const registerUser = async (name: string, email: string, password: string) => {
@@ -53,6 +53,7 @@ export const verifyEmail = async (token: string) => {
     throw error.response?.data || "Terjadi kesalahan saat verifikasi email";
   }
 };
+
 
 // Google OAuth (Manual Test)
 export const googleOAuth = async () => {

@@ -1,11 +1,20 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, registerUser, googleOAuth, verifyEmail as verifyEmailApi, getUserProfile } from '../services/AuthApi'; 
+import React, { createContext, useContext, useState, useEffect } from "react";
+import {
+  loginUser,
+  registerUser,
+  googleOAuth,
+  verifyEmail as verifyEmailApi,
+  getUserProfile as getUserProfileApi,
+} from "../services/AuthApi";
 
 interface User {
   id: string;
   name: string;
   email: string;
   isVerified: boolean;
+  token?: string;
+  role: string;
+  avatar: string;
 }
 
 interface AuthContextType {
@@ -16,31 +25,31 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
-  resendVerificationEmail: () => Promise<boolean>; 
+  resendVerificationEmail: () => Promise<boolean>;
+  fetchUserProfile: () => Promise<void>;
 }
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Check for existing session
+   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const savedToken = localStorage.getItem('token');
     if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
-      setToken(savedToken);
+      const parsedUser = JSON.parse(savedUser);
+      setUser({ ...parsedUser, token: savedToken }); 
     }
     setIsLoading(false);
   }, []);
@@ -52,9 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.success) {
         const { user, token } = response;
         setUser(user);
-        setToken(token);
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', token);
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
         setIsLoading(false);
         return true;
       } else {
@@ -68,38 +76,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Register user
-const register = async (name: string, email: string, password: string): Promise<boolean> => {
-  setIsLoading(true);
-  try {
-    const response = await registerUser(name, email, password);
-    if (response.success) {
-      // Only redirect to login after successful registration
-      setIsLoading(false);
-      return true;
-    } else {
-      setIsLoading(false);
-      return false;
-    }
-  } catch (error) {
-    console.error("Registration failed:", error);
-    setIsLoading(false);
-    return false;
-  }
-};
-
-
-  // Verify email
-    const verifyEmail = async (token: string): Promise<boolean> => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string
+  ): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await verifyEmailApi(token);  
+      const response = await registerUser(name, email, password);
       if (response.success) {
-        if (user) {
-          user.isVerified = true;
-          setUser({ ...user });
-          localStorage.setItem('user', JSON.stringify(user)); 
-        }
         setIsLoading(false);
         return true;
       } else {
@@ -107,34 +92,49 @@ const register = async (name: string, email: string, password: string): Promise<
         return false;
       }
     } catch (error) {
+      console.error("Registration failed:", error);
+      setIsLoading(false);
+      return false;
+    }
+  };
+
+  const verifyEmail = async (token: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const response = await verifyEmailApi(token);
+      if (response.success && user) {
+        user.isVerified = true;
+        setUser({ ...user });
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+      setIsLoading(false);
+      return response.success;
+    } catch (error) {
       console.error("Email verification failed:", error);
       setIsLoading(false);
       return false;
     }
   };
 
-const resendVerificationEmail = async (): Promise<boolean> => {
-  try {
-    // Simulating a successful resend response
-    console.log("Resend verification email (fake)");
-    return true;
-  } catch (error) {
-    console.error("Fake resend verification email failed:", error);
-    return false;
-  }
-};
+  const resendVerificationEmail = async (): Promise<boolean> => {
+    try {
+      console.log("Resend verification email (fake)");
+      return true;
+    } catch (error) {
+      console.error("Fake resend verification email failed:", error);
+      return false;
+    }
+  };
 
-  // Google Login
   const googleLogin = async (): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await googleOAuth();  // Call googleOAuth API function
+      const response = await googleOAuth();
       if (response.success) {
         const { user, token } = response;
         setUser(user);
-        setToken(token);
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', token);
+        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("token", token);
         setIsLoading(false);
         return true;
       } else {
@@ -148,17 +148,52 @@ const resendVerificationEmail = async (): Promise<boolean> => {
     }
   };
 
+  const fetchUserProfile = async (): Promise<void> => {
+    setIsLoading(true);
+    const savedToken = localStorage.getItem("token");
+    if (savedToken) {
+      try {
+        const profileData = await getUserProfileApi(savedToken);
+        if (profileData) {
+          setUser({ ...profileData, token: savedToken });
+          localStorage.setItem(
+            "user",
+            JSON.stringify({ ...profileData, token: savedToken })
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile:", error);
+        setUser(null);
+      }
+    } else {
+      setUser(null);
+    }
+    setIsLoading(false);
+  };
+
   const logout = () => {
     setUser(null);
-    setToken(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, verifyEmail, resendVerificationEmail, googleLogin, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register,
+        verifyEmail,
+        resendVerificationEmail,
+        googleLogin,
+        fetchUserProfile,
+        logout,
+        isLoading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
+
 export default AuthProvider;

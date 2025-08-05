@@ -20,12 +20,23 @@ export const registerUser = async (name: string, email: string, password: string
 // Login user
 export const loginUser = async (email: string, password: string) => {
   try {
-    const response = await axios.post(`${API_URL}/login`, {
-      email,
-      password
-    });
-    return response.data;
+    const response = await axios.post(`${API_URL}/login`, { email, password });
+
+    // Make sure the response contains the token
+    if (response.data.success && response.data.token) {
+      const { token, user } = response.data;
+
+      // Store the token and user data in localStorage
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+      console.log("Login successful: Token stored");
+
+      return response.data;  // Return full response if needed
+    } else {
+      throw new Error("Login failed: Token or user data missing");
+    }
   } catch (error: any) {
+    console.error("Login error:", error);
     throw error.response?.data || "Terjadi kesalahan saat login";
   }
 };

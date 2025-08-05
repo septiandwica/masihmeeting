@@ -32,19 +32,36 @@ interface UploadedFile {
 }
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, setUser} = useAuth();
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [recentTranscriptions, setRecentTranscriptions] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [totalTranscriptions, setTotalTranscriptions] = useState<number>(0);
+   const [isLoading, setIsLoading] = useState(true);
+useEffect(() => {
+  const savedUser = localStorage.getItem("user");
+  const savedToken = localStorage.getItem("token");
 
+  if (savedUser && savedToken) {
+    const parsedUser = JSON.parse(savedUser);
+    setUser({ ...parsedUser, token: savedToken });
+  } else {
+    console.error("Token or user is missing from localStorage");
+  }
+
+  setIsLoading(false);
+}, []);
   useEffect(() => {
     // Fetch user transcriptions on mount
     if (user?.id) {
       const fetchTranscriptions = async () => {
         try {
+          const token = user?.token || "";
+if (!token) {
+  return;
+}
           const response = await getUserTranscriptions({
             userId: user.id,
             token: user.token || "",

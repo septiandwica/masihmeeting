@@ -19,6 +19,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+   setUser: React.Dispatch<React.SetStateAction<User | null>>; 
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   googleLogin: () => Promise<boolean>;
@@ -45,14 +46,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
 
    useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    const savedToken = localStorage.getItem('token');
-    if (savedUser && savedToken) {
-      const parsedUser = JSON.parse(savedUser);
-      setUser({ ...parsedUser, token: savedToken }); 
-    }
-    setIsLoading(false);
-  }, []);
+  const savedUser = localStorage.getItem("user");
+  const savedToken = localStorage.getItem("token");
+
+  if (savedUser && savedToken) {
+    const parsedUser = JSON.parse(savedUser);
+    setUser({ ...parsedUser, token: savedToken });
+  }
+
+  setIsLoading(false);
+}, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
@@ -60,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await loginUser(email, password);
       if (response.success) {
         const { user, token } = response;
-        setUser(user);
+       setUser(user); 
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("token", token);
         setIsLoading(false);
@@ -181,6 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         login,
         register,
         verifyEmail,

@@ -141,20 +141,20 @@ const MeetingDetailPage = () => {
   useEffect(() => {
     const updateRows = () => {
       if (window.innerWidth < 768) {
-        setRows(10); // Mobile (less than 768px)
+        setRows(10);
       } else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
-        setRows(20); // Tablet (between 768px and 1024px)
+        setRows(20); 
       } else {
-        setRows(30); // Desktop (1024px and above)
+        setRows(30); 
       }
     };
 
-    updateRows(); // Set initial rows based on the window size
+    updateRows(); 
 
-    window.addEventListener("resize", updateRows); // Listen for window resizing
+    window.addEventListener("resize", updateRows);
 
     return () => {
-      window.removeEventListener("resize", updateRows); // Cleanup the event listener
+      window.removeEventListener("resize", updateRows); 
     };
   }, []);
   useEffect(() => {

@@ -197,7 +197,7 @@ const handleYoutubeSubmit = async (e: React.FormEvent) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 dark:border-gray-700">
+          <Link to="/dashboard/transcription" className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 dark:border-gray-700">
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -217,7 +217,7 @@ const handleYoutubeSubmit = async (e: React.FormEvent) => {
                 </div>
               </div>
             </div>
-          </div>
+          </Link>
 
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 dark:border-gray-700">
             <div className="p-6">

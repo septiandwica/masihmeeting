@@ -51,10 +51,16 @@ const Header: React.FC = () => {
                 >
                   Dashboard
                 </Link>
+                 <Link
+                  to="/dashboard/transcription"
+                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Transcriptions
+                </Link>
                 {/* If user is an admin, show the Admin Dashboard link */}
                 {user.role === 'admin' && (
                   <Link
-                    to="/admin/dashboard"
+                    to="/admin/dashboard/management"
                     className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                   >
                    User Management
@@ -156,10 +162,17 @@ const Header: React.FC = () => {
                   >
                     Dashboard
                   </Link>
+                   <Link
+                    to="/dashboard/transcription"
+                    onClick={closeMobileMenu}
+                    className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors"
+                  >
+                    Transcriptions
+                  </Link>
                   {/* Show Admin Dashboard link if role is admin */}
                   {user.role === 'admin' && (
                     <Link
-                      to="/admin/dashboard"
+                      to="/admin/dashboard/management"
                       onClick={closeMobileMenu}
                       className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors"
                     >

@@ -1,23 +1,30 @@
 import axios from "axios";
 
-axios.defaults.withCredentials = true; 
+axios.defaults.withCredentials = true;
 const API_URL = "http://localhost:3000/transcribe";
 
 // Transcribe YouTube URL
-export const transcribeYouTube = async (url: string, userId: string, token: string) => {
+export const transcribeYouTube = async (
+  url: string,
+  userId: string,
+  token: string
+) => {
   try {
     const response = await axios.post(
-      `${API_URL}/youtube`, 
+      `${API_URL}/youtube`,
       { url, userId },
       {
         headers: {
-          Authorization: `Bearer ${token}`,  
-        }
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data;
   } catch (error: any) {
-    throw error.response?.data || "Terjadi kesalahan saat mentranskrip video YouTube";
+    throw (
+      error.response?.data ||
+      "Terjadi kesalahan saat mentranskrip video YouTube"
+    );
   }
 };
 
@@ -27,19 +34,17 @@ export const transcribeAudio = async (file: File, token: string) => {
   formData.append("file", file);
 
   try {
-    const response = await axios.post(
-      `${API_URL}/audio`, 
-      formData, 
-      {
-        headers: {
-          "Content-Type": 'multipart/form-data',
-          Authorization: `Bearer ${token}`, 
-        }
-      }
-    );
+    const response = await axios.post(`${API_URL}/audio`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error: any) {
-    throw error.response?.data || "Terjadi kesalahan saat mentranskrip file audio";
+    throw (
+      error.response?.data || "Terjadi kesalahan saat mentranskrip file audio"
+    );
   }
 };
 
@@ -49,23 +54,26 @@ export const transcribeVideo = async (file: File, token: string) => {
   formData.append("file", file);
 
   try {
-    const response = await axios.post(
-      `${API_URL}/video`, 
-      formData, 
-      {
-        headers: {
-          "Content-Type": 'multipart/form-data',
-          Authorization: `Bearer ${token}`, 
-        }
-      }
-    );
+    const response = await axios.post(`${API_URL}/video`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
     return response.data;
   } catch (error: any) {
-    throw error.response?.data || "Terjadi kesalahan saat mentranskrip file video";
+    throw (
+      error.response?.data || "Terjadi kesalahan saat mentranskrip file video"
+    );
   }
 };
 
-export const getUserTranscriptions = async ({ token }: { userId: string, token: string }) => {
+export const getUserTranscriptions = async ({
+  token,
+}: {
+  userId: string;
+  token: string;
+}) => {
   try {
     const response = await axios.get(`${API_URL}`, {
       headers: {
@@ -74,7 +82,9 @@ export const getUserTranscriptions = async ({ token }: { userId: string, token: 
     });
     return response.data;
   } catch (error: any) {
-    throw error.response?.data || "Terjadi kesalahan saat mengambil data transkrip";
+    throw (
+      error.response?.data || "Terjadi kesalahan saat mengambil data transkrip"
+    );
   }
 };
 
@@ -88,6 +98,143 @@ export const getTranscriptionDetails = async (id: string, token: string) => {
     });
     return response.data;
   } catch (error: any) {
-    throw error.response?.data || "Terjadi kesalahan saat mengambil detail transkrip";
+    throw (
+      error.response?.data ||
+      "Terjadi kesalahan saat mengambil detail transkrip"
+    );
   }
 };
+
+export const deleteTranscription = async (id: string, token: string) => {
+  try {
+    const response = await axios.delete(`${API_URL}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || "Terjadi kesalahan saat mengahapus transkrip";
+  }
+};
+
+export const updateTranscription = async (
+  id: string,
+  title: string,
+  summary: string,
+  token: string
+) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}/${id}`,
+      { title, summary },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw (
+      error.response?.data || "Terjadi kesalahan saat memperbarui transkrip"
+    );
+  }
+};
+
+export const askQuestion = async (
+  transcriptionId: string,
+  question: string,
+  token: string
+) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/${transcriptionId}/ask`,
+      { question },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || "Terjadi kesalahan saat bertanya";
+  }
+};
+
+export const getChatHistory = async (transcriptionId: string, token: string) => {
+  try {
+    const response = await axios.get(`${API_URL}/${transcriptionId}/ask`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.data.success) {
+      return response.data.history;
+    } else {
+      throw new Error("No history found");
+    }
+  } catch (error) {
+    console.error("Terjadi kesalahan saat mengambil history chat:", error);
+    throw error; 
+  }
+};
+
+export const generateQuiz = async (transcriptionId: string, token: string) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/${transcriptionId}/quiz`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || "Terjadi kesalahan saat generate quiz";
+  }
+};
+
+export const getQuiz = async (transcriptionId: string, token: string) => {
+  try {
+    const response = await axios.get(`${API_URL}/${transcriptionId}/quiz`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || "Terjadi kesalahan saat mengambil quiz";
+  }
+};
+
+
+interface QuizAnswer {
+  selected: string;
+}
+
+export const submitQuiz = async (
+  transcriptionId: string,
+  answers: QuizAnswer[],
+  token: string
+) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/${transcriptionId}/submit_quiz`,
+      { answers },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || "Terjadi kesalahan saat mengirim jawaban quiz";
+  }
+};
+

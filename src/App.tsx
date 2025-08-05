@@ -7,13 +7,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/admin/Dashboard"; // Make sure to import AdminDashboard
+import AdminDashboard from "./pages/admin/Dashboard";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
 import ProfilePage from "./pages/Profile";
-import MeetingDetail from "./pages/user/MeetingDetail";
+import TranscriptionDetail from "./pages/user/TranscriptionsDetail";
+import TranscriptionList from "./pages/user/TranscriptionList";
 
 function App() {
   return (
@@ -27,14 +28,11 @@ function App() {
               <Route path="/features" element={<Features />} />
               <Route path="/pricing" element={<Pricing />} />
 
-              {/* Halaman Login dan Register dengan proteksi */}
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
 
-
               <Route path="/verify/:token" element={<VerifyEmail />} />
 
-              {/* Protected routes untuk dashboard */}
               <Route
                 path="/dashboard"
                 element={
@@ -44,7 +42,15 @@ function App() {
                 }
               />
               <Route
-                path="/admin/dashboard"
+                path="/dashboard/transcription"
+                element={
+                  <ProtectedRoute>
+                    <TranscriptionList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/dashboard/management"
                 element={
                   <ProtectedRoute>
                     <AdminDashboard />
@@ -52,7 +58,6 @@ function App() {
                 }
               />
 
-              {/* Allow access to profile page for both admin and user */}
               <Route
                 path="/profile"
                 element={
@@ -62,13 +67,13 @@ function App() {
                 }
               />
               <Route
-  path="/dashboard/meeting/:id"
-  element={
-    <ProtectedRoute redirectTo="/login"> {/* Redirect to login if the user isn't authenticated */}
-      <MeetingDetail /> {/* The component to show the meeting details */}
-    </ProtectedRoute>
-  }
-/>
+                path="/dashboard/transcription/:id"
+                element={
+                  <ProtectedRoute redirectTo="/login">
+                    <TranscriptionDetail />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
             <Footer />
           </div>

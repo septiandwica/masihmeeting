@@ -85,101 +85,82 @@ const Dashboard: React.FC = () => {
   };
 
   const handleFiles = async (files: FileList) => {
-    Array.from(files).forEach(async (file) => {
-      // Marking inner callback as async
-      if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
-        const newFile: UploadedFile = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          name: file.name,
-          type: file.type.startsWith("audio/") ? "audio" : "video",
-          size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
-          status: "processing",
-          progress: 0,
-        };
-
-        setUploadedFiles((prev) => [...prev, newFile]);
-        simulateProcessing(newFile.id);
-
-        const token = user?.token || "";
-
-        if (file.type.startsWith("audio/")) {
-          await transcribeAudio(file, token);
-        } else if (file.type.startsWith("video/")) {
-          await transcribeVideo(file, token);
-        }
-      }
-    });
-  };
-  const simulateProcessing = (fileId: string) => {
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 10; 
-      if (progress >= 100) {
-        progress = 100;
-        setUploadedFiles((prev) =>
-          prev.map((file) =>
-            file.id === fileId
-              ? {
-                  ...file,
-                  status: "completed",
-                  progress: 100,
-                  duration: "2:34",
-                }
-              : file
-          )
-        );
-        clearInterval(interval);
-      } else {
-        setUploadedFiles((prev) =>
-          prev.map((file) =>
-            file.id === fileId ? { ...file, progress } : file
-          )
-        );
-      }
-    }, 1000); 
-  };
-
-  const handleYoutubeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (youtubeUrl.trim()) {
+  Array.from(files).forEach(async (file) => {
+    if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
       const newFile: UploadedFile = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        name: "YouTube Video",
-        type: "youtube",
+        name: file.name,
+        type: file.type.startsWith("audio/") ? "audio" : "video",
+        size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
         status: "processing",
-        progress: 0,
       };
 
       setUploadedFiles((prev) => [...prev, newFile]);
-      setYoutubeUrl("");
-      simulateProcessing(newFile.id);
 
-      // Call transcribeYouTube API with user token
+      const token = user?.token || "";
+
       try {
-        const token = user?.token || ""; 
-        await transcribeYouTube(youtubeUrl, user?.id || "", token);
+        if (file.type.startsWith("audio/")) {
+          await transcribeAudio(file, token);
+        } else {
+          await transcribeVideo(file, token);
+        }
+
+        // Setelah selesai
         setUploadedFiles((prev) =>
-          prev.map((file) =>
-            file.id === newFile.id
-              ? {
-                  ...file,
-                  status: "completed",
-                  progress: 100,
-                  duration: "3:45",
-                }
-              : file
+          prev.map((f) =>
+            f.id === newFile.id
+              ? { ...f, status: "completed", duration: "2:34" }
+              : f
           )
         );
       } catch (error) {
         console.error(error);
         setUploadedFiles((prev) =>
-          prev.map((file) =>
-            file.id === newFile.id ? { ...file, status: "error" } : file
+          prev.map((f) =>
+            f.id === newFile.id ? { ...f, status: "error" } : f
           )
         );
       }
     }
-  };
+  });
+};
+
+const handleYoutubeSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (youtubeUrl.trim()) {
+    const newFile: UploadedFile = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      name: "YouTube Video",
+      type: "youtube",
+      status: "processing",
+    };
+
+    setUploadedFiles((prev) => [...prev, newFile]);
+    setYoutubeUrl("");
+
+    try {
+      const token = user?.token || "";
+      await transcribeYouTube(youtubeUrl, user?.id || "", token);
+
+      setUploadedFiles((prev) =>
+        prev.map((file) =>
+          file.id === newFile.id
+            ? { ...file, status: "completed", duration: "3:45" }
+            : file
+        )
+      );
+    } catch (error) {
+      console.error(error);
+      setUploadedFiles((prev) =>
+        prev.map((file) =>
+          file.id === newFile.id ? { ...file, status: "error" } : file
+        )
+      );
+    }
+  }
+};
+
 
   const removeFile = (fileId: string) => {
     setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
@@ -442,7 +423,7 @@ const Dashboard: React.FC = () => {
             </h2>
             <div className="space-y-4">
               {recentTranscriptions.map((item) => (
-                <Link to={`/dashboard/meeting/${item._id}`} key={item._id}>
+                <Link to={`/dashboard/transcription/${item._id}`} key={item._id}>
                   {" "}
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors my-4">
                     <div className="flex items-center space-x-4">

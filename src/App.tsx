@@ -16,6 +16,7 @@ import ProfilePage from "./pages/user/Profile";
 import TranscriptionDetail from "./pages/user/TranscriptionsDetail";
 import TranscriptionList from "./pages/user/TranscriptionList";
 import ErrorPage from "./pages/error/error";
+import GoogleCallback from "./components/GoogleCallback";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
               <Route path="/register" element={<Register />} />
 
               <Route path="/verify/:token" element={<VerifyEmail />} />
+               <Route path="/oauth/callback" element={<GoogleCallback />} />
 
               <Route
                 path="/dashboard"

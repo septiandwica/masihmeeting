@@ -238,3 +238,26 @@ export const submitQuiz = async (
   }
 };
 
+
+// Function to download transcription PDF
+export const downloadTranscriptionPDF = async (transcriptionId: string, token: string) => {
+  try {
+    // Send GET request to backend to fetch the PDF
+    const response = await axios.get(`${API_URL}/${transcriptionId}/download`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/pdf",
+      },
+      responseType: 'arraybuffer',  
+    });
+
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${transcriptionId}.pdf`; 
+    link.click(); 
+  } catch (error: any) {
+    throw error.response?.data || "Terjadi kesalahan saat mengunduh PDF transkrip";
+  }
+};

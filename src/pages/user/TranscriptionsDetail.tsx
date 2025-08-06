@@ -29,6 +29,7 @@ import {
   generateQuiz,
   getQuiz,
   submitQuiz,
+  downloadTranscriptionPDF,
 } from "../../services/transcribeApi";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link, useParams, useNavigate } from "react-router-dom";
@@ -278,6 +279,21 @@ const MeetingDetailPage = () => {
       setQuizLoading(false);
     }
   };
+  const handleDownload = async (transcriptionId: string) => {
+      try {
+        // Ambil token dari localStorage atau state aplikasi Anda
+        const token = localStorage.getItem("token");
+  
+        if (!token) {
+          return;
+        }
+  
+        await downloadTranscriptionPDF(transcriptionId, token);
+      } catch (error) {
+        const errorMessage = "Terjadi kesalahan saat mengunduh PDF transkrip";
+      }
+    };
+  
 
   const handleSubmitQuiz = async () => {
     if (!transcriptionData?._id || !token) return;
@@ -491,7 +507,7 @@ const MeetingDetailPage = () => {
               >
                 <SquarePen className="w-5 h-5" />
               </button>
-              <button className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <button   onClick={() => handleDownload(transcriptionData._id)} className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <Download className="w-5 h-5" />
               </button>
               <button
@@ -755,13 +771,18 @@ const MeetingDetailPage = () => {
                               {item.title}
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                              Duration: {item.duration}s • Accuracy:{" "}
-                              {item.accuracy}
-                            </p>
+                          Duration: {Math.floor(item.duration / 60)}m{" "}
+                          {item.duration % 60}s • Accuracy:{" "}
+                          {item.quizResults && item.quizResults.percentage
+                            ? `${(item.quizResults.percentage * 100).toFixed(
+                                0
+                              )}%`
+                            : "Not taken yet"}
+                        </p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          <button  onClick={() => handleDownload(item._id)} className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                             <Download className="h-4 w-4" />
                           </button>
                           <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">

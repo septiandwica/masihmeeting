@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   loginUser,
   registerUser,
-  googleOAuth,
+  googleLogin as startGoogleLogin,
   verifyEmail as verifyEmailApi,
   getUserProfile as getUserProfileApi,
 } from "../services/authApi";
@@ -22,7 +22,7 @@ interface AuthContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
-  googleLogin: () => Promise<boolean>;
+  googleLogin: () => void;
   verifyEmail: (token: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
@@ -50,8 +50,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const savedToken = localStorage.getItem("token");
 
     if (savedUser && savedToken) {
-      const parsedUser = JSON.parse(savedUser);
-      setUser({ ...parsedUser, token: savedToken });
+      try {
+        let parsedUser = JSON.parse(savedUser);
+        
+        if (parsedUser && parsedUser.user && typeof parsedUser.user === 'object' && parsedUser.user.id) {
+          parsedUser = parsedUser.user;
+        }
+
+        if (parsedUser && parsedUser.id) {
+          setUser({ ...parsedUser, token: savedToken });
+        } else {
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+          setUser(null);
+        }
+      } catch (error) {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        setUser(null);
+      }
     }
 
     setIsLoading(false);
@@ -62,9 +79,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const response = await loginUser(email, password);
       if (response.success) {
-        const { user, token } = response;
-        setUser(user);
-        localStorage.setItem("user", JSON.stringify(user));
+        const { user: userData, token } = response; 
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
         localStorage.setItem("token", token);
         setIsLoading(false);
         return true;
@@ -73,7 +90,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         return false;
       }
     } catch (error) {
-      console.error("Login failed:", error);
       setIsLoading(false);
       return false;
     }
@@ -89,13 +105,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await registerUser(name, email, password);
       if (response.success) {
         setIsLoading(false);
+        console.log("Registrasi berhasil.");
         return true;
       } else {
         setIsLoading(false);
+        console.log("Registrasi gagal: Respons tidak berhasil.");
         return false;
       }
     } catch (error) {
-      console.error("Registration failed:", error);
+      console.error("Registrasi gagal:", error);
       setIsLoading(false);
       return false;
     }
@@ -106,14 +124,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const response = await verifyEmailApi(token);
       if (response.success && user) {
-        user.isVerified = true;
-        setUser({ ...user });
-        localStorage.setItem("user", JSON.stringify(user));
+        const updatedUser = { ...user, isVerified: true };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        console.log("Verifikasi email berhasil.");
       }
       setIsLoading(false);
       return response.success;
     } catch (error) {
-      console.error("Email verification failed:", error);
+      console.error("Verifikasi email gagal:", error);
       setIsLoading(false);
       return false;
     }
@@ -121,52 +140,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const resendVerificationEmail = async (): Promise<boolean> => {
     try {
-      console.log("Resend verification email (fake)");
+      console.log("Mengirim ulang email verifikasi (simulasi)");
       return true;
     } catch (error) {
-      console.error("Fake resend verification email failed:", error);
+      console.error("Gagal mengirim ulang email verifikasi (simulasi):", error);
       return false;
     }
   };
 
-  const googleLogin = async (): Promise<boolean> => {
-    setIsLoading(true);
-    try {
-      const response = await googleOAuth();
-      if (response.success) {
-        const { user, token } = response;
-        setUser(user);
-        localStorage.setItem("user", JSON.stringify(user));
-        localStorage.setItem("token", token);
-        setIsLoading(false);
-        return true;
-      } else {
-        setIsLoading(false);
-        return false;
-      }
-    } catch (error) {
-      console.error("Google login failed:", error);
-      setIsLoading(false);
-      return false;
-    }
+  const googleLogin = () => {
+    console.log("Memulai alur login Google...");
+    startGoogleLogin();
   };
 
   const fetchUserProfile = async (): Promise<void> => {
     setIsLoading(true);
     const savedToken = localStorage.getItem("token");
+
     if (savedToken) {
       try {
-        const profileData = await getUserProfileApi(savedToken);
-        if (profileData) {
-          setUser({ ...profileData, token: savedToken });
+        const profileData = await getUserProfileApi(savedToken); 
+        
+        if (profileData && profileData.user) { 
+          const actualUser = { ...profileData.user, token: savedToken };
+          setUser(actualUser); 
           localStorage.setItem(
             "user",
-            JSON.stringify({ ...profileData, token: savedToken })
+            JSON.stringify(actualUser)
           );
+        } else {
+          setUser(null);
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
         }
       } catch (error) {
-        console.error("Failed to fetch user profile:", error);
         setUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
       }
     } else {
       setUser(null);

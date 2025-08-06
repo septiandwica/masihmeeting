@@ -65,13 +65,32 @@ export const verifyEmail = async (token: string) => {
   }
 };
 
+// Mengarahkan pengguna ke halaman login Google
+export const googleLogin = () => {
+  // Langsung navigasi ke endpoint Express untuk memulai alur OAuth
+  window.location.href = `${API_URL}/google`;
+};
 
-// Google OAuth (Manual Test)
-export const googleOAuth = async () => {
+// Menangani callback dari Google OAuth
+export const handleGoogleCallback = (token: string) => {
+  // Simpan token yang didapat dari URL callback ke localStorage
+  localStorage.setItem("token", token);
+  // Kamu mungkin juga ingin menyimpan data user di sini jika server mengirimkannya
+  console.log("Google login successful: Token stored");
+};
+
+
+
+export const getUserStats = async (userId: string, token: string) => {
   try {
-    const response = await axios.get(`${API_URL}/google`);
-    return response.data;
+    const response = await axios.get(`${API_URL}/${userId}/stats`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;  // Return the response data
   } catch (error: any) {
-    throw error.response?.data || "Terjadi kesalahan saat login menggunakan Google";
+    throw error.response?.data || "Terjadi kesalahan saat mengambil stats user";
   }
 };

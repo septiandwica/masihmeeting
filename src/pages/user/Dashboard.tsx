@@ -17,6 +17,7 @@ import {
   transcribeYouTube,
   transcribeAudio,
   transcribeVideo,
+  downloadTranscriptionPDF,
   getUserTranscriptions,
 } from "../../services/transcribeApi";
 
@@ -25,6 +26,7 @@ import { Link } from "react-router-dom";
 
 interface UploadedFile {
   id: string;
+  _id?: string;
   name: string;
   type: "audio" | "video" | "youtube";
   size?: string;
@@ -52,10 +54,7 @@ const Dashboard: React.FC = () => {
     if (savedUser && savedToken) {
       const parsedUser = JSON.parse(savedUser);
       setUser({ ...parsedUser, token: savedToken });
-    } else {
-      console.error("Token or user is missing from localStorage");
-    }
-
+    } 
     setIsLoading(false);
   }, []);
   useEffect(() => {
@@ -95,7 +94,7 @@ const Dashboard: React.FC = () => {
           const statsResponse = await getUserStats(user.id, token);
           const { quizMade, averagePercentage } = statsResponse.data;
 
-            const averageNum = parseFloat(averagePercentage).toPrecision(2)
+          const averageNum = parseFloat(averagePercentage).toPrecision(2);
 
           setQuizMade(quizMade);
           setAveragePercentage(Number(averageNum));
@@ -156,8 +155,10 @@ const Dashboard: React.FC = () => {
   const handleFiles = async (files: FileList) => {
     Array.from(files).forEach(async (file) => {
       if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
+        const temporaryId =
+          Date.now().toString() + Math.random().toString(36).substr(2, 9);
         const newFile: UploadedFile = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          id: temporaryId,
           name: file.name,
           type: file.type.startsWith("audio/") ? "audio" : "video",
           size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
@@ -165,21 +166,26 @@ const Dashboard: React.FC = () => {
         };
 
         setUploadedFiles((prev) => [...prev, newFile]);
-
         const token = user?.token || "";
 
         try {
+          let response;
           if (file.type.startsWith("audio/")) {
-            await transcribeAudio(file, token);
+            response = await transcribeAudio(file, token);
           } else {
-            await transcribeVideo(file, token);
+            response = await transcribeVideo(file, token);
           }
 
-          // Setelah selesai
+          const newTranscript = response.newTranscript;
+
           setUploadedFiles((prev) =>
             prev.map((f) =>
-              f.id === newFile.id
-                ? { ...f, status: "completed", duration: "2:34" }
+              f.id === temporaryId
+                ? {
+                    ...f,
+                    status: "completed",
+                    _id: newTranscript._id, // Assign the real database _id
+                  }
                 : f
             )
           );
@@ -187,19 +193,35 @@ const Dashboard: React.FC = () => {
           console.error(error);
           setUploadedFiles((prev) =>
             prev.map((f) =>
-              f.id === newFile.id ? { ...f, status: "error" } : f
+              f.id === temporaryId ? { ...f, status: "error" } : f
             )
           );
         }
       }
     });
   };
+  const handleDownload = async (transcriptionId: string) => {
+    try {
+      // Ambil token dari localStorage atau state aplikasi Anda
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        return;
+      }
+
+      await downloadTranscriptionPDF(transcriptionId, token);
+    } catch (error) {
+      const errorMessage = "Terjadi kesalahan saat mengunduh PDF transkrip";
+    }
+  };
 
   const handleYoutubeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (youtubeUrl.trim()) {
+      const temporaryId =
+        Date.now().toString() + Math.random().toString(36).substr(2, 9);
       const newFile: UploadedFile = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        id: temporaryId,
         name: "YouTube Video",
         type: "youtube",
         status: "processing",
@@ -210,12 +232,23 @@ const Dashboard: React.FC = () => {
 
       try {
         const token = user?.token || "";
-        await transcribeYouTube(youtubeUrl, user?.id || "", token);
+        // The transcribeYouTube function should return the new transcript object
+        const response = await transcribeYouTube(
+          youtubeUrl,
+          user?.id || "",
+          token
+        );
+        const newTranscript = response.newTranscript;
 
         setUploadedFiles((prev) =>
           prev.map((file) =>
-            file.id === newFile.id
-              ? { ...file, status: "completed", duration: "3:45" }
+            file.id === temporaryId
+              ? {
+                  ...file,
+                  status: "completed",
+                  duration: `${newTranscript.duration}s`, // Use actual duration
+                  _id: newTranscript._id, // Assign the real database _id
+                }
               : file
           )
         );
@@ -223,7 +256,7 @@ const Dashboard: React.FC = () => {
         console.error(error);
         setUploadedFiles((prev) =>
           prev.map((file) =>
-            file.id === newFile.id ? { ...file, status: "error" } : file
+            file.id === temporaryId ? { ...file, status: "error" } : file
           )
         );
       }
@@ -273,7 +306,6 @@ const Dashboard: React.FC = () => {
             </div>
           </Link>
 
-         
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 dark:border-gray-700">
             <div className="p-6">
               <div className="flex items-center">
@@ -288,7 +320,7 @@ const Dashboard: React.FC = () => {
                       Quiz Made
                     </dt>
                     <dd className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {quizMade} 
+                      {quizMade}
                     </dd>
                   </dl>
                 </div>
@@ -310,7 +342,7 @@ const Dashboard: React.FC = () => {
                       Comprehension Accuracy
                     </dt>
                     <dd className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {averagePercentage * 100 }%
+                      {averagePercentage * 100}%
                     </dd>
                   </dl>
                 </div>
@@ -391,10 +423,13 @@ const Dashboard: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
               Processing Files
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-4 ">
               {uploadedFiles.map((file) => (
-                <Link to={`/dashboard/transcription/${file.id}`} key={file.id}>
-                  {" "}
+                <Link
+                  to={`/dashboard/transcription/${file._id}`}
+                  key={file._id}
+                  className="block mb-4"
+                >
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center space-x-4 flex-1">
                       <div
@@ -436,10 +471,8 @@ const Dashboard: React.FC = () => {
                           <div className="flex items-center space-x-2">
                             {file.status === "processing" && (
                               <>
-                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                                 <span className="text-xs text-blue-600 dark:text-blue-400">
-                                  Processing... {Math.round(file.progress || 0)}
-                                  %
+                                  Processing...
                                 </span>
                               </>
                             )}
@@ -453,20 +486,24 @@ const Dashboard: React.FC = () => {
                             )}
                           </div>
                         </div>
-                        {file.status === "processing" && (
-                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5 mt-2">
-                            <div
-                              className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
-                              style={{ width: `${file.progress || 0}%` }}
-                            ></div>
-                          </div>
-                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       {file.status === "completed" && (
                         <>
-                          <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (file._id) {
+                                handleDownload(file._id);
+                              } else {
+                                console.error(
+                                  "File ID is missing for download."
+                                );
+                              }
+                            }}
+                            className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          >
                             <Download className="h-4 w-4" />
                           </button>
                           <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -495,49 +532,56 @@ const Dashboard: React.FC = () => {
             </h2>
             <div className="space-y-4">
               {recentTranscriptions.map((item) => (
-                <Link
-                  to={`/dashboard/transcription/${item._id}`}
+                <div
                   key={item._id}
+                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors my-4"
                 >
-                  {" "}
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors my-4">
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`p-2 rounded-lg ${
-                          item.type === "youtube"
-                            ? "bg-red-100 dark:bg-red-900/20"
-                            : item.type === "upload"
-                            ? "bg-purple-100 dark:bg-purple-900/20"
-                            : "bg-blue-100 dark:bg-blue-900/20"
-                        }`}
-                      >
-                        {item.type === "youtube" ? (
-                          <Youtube className="h-5 w-5 text-red-600 dark:text-red-400" />
-                        ) : item.type === "upload" ? (
-                          <File className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                        ) : (
-                          <Mic className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                          {item.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Duration: {item.duration}s • Accuracy: {item.accuracy}
-                        </p>
-                      </div>
+                  <Link
+                    to={`/dashboard/transcription/${item._id}`}
+                    className="flex items-center space-x-4 flex-grow"
+                  >
+                    <div
+                      className={`p-2 rounded-lg ${
+                        item.type === "youtube"
+                          ? "bg-red-100 dark:bg-red-900/20"
+                          : item.type === "upload"
+                          ? "bg-purple-100 dark:bg-purple-900/20"
+                          : "bg-blue-100 dark:bg-blue-900/20"
+                      }`}
+                    >
+                      {item.type === "youtube" ? (
+                        <Youtube className="h-5 w-5 text-red-600 dark:text-red-400" />
+                      ) : item.type === "upload" ? (
+                        <File className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      ) : (
+                        <Mic className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      )}
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                        <Download className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                        <Share2 className="h-4 w-4" />
-                      </button>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Duration: {Math.floor(item.duration / 60)}m{" "}
+                        {item.duration % 60}s • Accuracy:{" "}
+                        {item.quizResults && item.quizResults.percentage
+                          ? `${(item.quizResults.percentage * 100).toFixed(0)}%`
+                          : "Not taken yet"}
+                      </p>
                     </div>
+                  </Link>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleDownload(item._id)}
+                      className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                    <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                      <Share2 className="h-4 w-4" />
+                    </button>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           </div>

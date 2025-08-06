@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { Mic, Eye, EyeOff, User, Mail, Lock } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-
 
 const Register: React.FC = () => {
   const { register, isLoading } = useAuth();
@@ -15,7 +14,6 @@ const Register: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +81,7 @@ const Register: React.FC = () => {
                 {error}
               </div>
             )}
-           
+
             <div>
               <label
                 htmlFor="fullName"

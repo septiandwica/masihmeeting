@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mic, Eye, EyeOff } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
-import Alert from "../components/Alert";
+import { useAuth } from "../../contexts/AuthContext";
+import Alert from "../../components/Alert";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -11,7 +11,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState("");
   const [showRegistrationAlert, setShowRegistrationAlert] = useState(false);
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
-  const { login, isLoading } = useAuth();
+  const { login, googleLogin, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +46,15 @@ const Login: React.FC = () => {
       setError(
         "Invalid email or password. Password must be at least 6 characters."
       );
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    const success = await googleLogin();
+    if (success) {
+      navigate("/dashboard");
+    } else {
+      setError("Google login failed. Please try again.");
     }
   };
 
@@ -177,6 +186,20 @@ const Login: React.FC = () => {
               </p>
             </div>
           </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                "Sign in with Google"
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="text-center">

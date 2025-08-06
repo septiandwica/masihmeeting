@@ -92,3 +92,17 @@ export const deleteUser = async (_id: string, token: string | undefined) => {
     throw error.response?.data || "Terjadi kesalahan saat menghapus user";
   }
 };
+
+export const getUserStats = async (userId: string, token: string) => {
+  try {
+    const response = await axios.get(`${API_URL}/${userId}/stats`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return response.data;  // Return the response data
+  } catch (error: any) {
+    throw error.response?.data || "Terjadi kesalahan saat mengambil stats user";
+  }
+};

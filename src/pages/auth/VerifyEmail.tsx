@@ -1,29 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 
 const VerifyEmail: React.FC = () => {
   const { token } = useParams<{ token: string }>();
   const { verifyEmail, isLoading, resendVerificationEmail } = useAuth();
   const [verificationStatus, setVerificationStatus] = useState<string>("");
-  const [isVerified, setIsVerified] = useState<boolean>(false); 
-  const [hasAttemptedVerification, setHasAttemptedVerification] = useState<boolean>(false);
+  const [isVerified, setIsVerified] = useState<boolean>(false);
+  const [hasAttemptedVerification, setHasAttemptedVerification] =
+    useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token || hasAttemptedVerification) return; 
+    if (!token || hasAttemptedVerification) return;
 
     const verify = async () => {
-      setHasAttemptedVerification(true); 
+      setHasAttemptedVerification(true);
 
       const success = await verifyEmail(token);
       if (success) {
         setVerificationStatus("Email verified successfully!");
-        setIsVerified(true); 
-        localStorage.setItem('isVerified', 'true');
-        navigate("/login"); 
+        setIsVerified(true);
+        localStorage.setItem("isVerified", "true");
+        navigate("/login");
       } else {
-        setVerificationStatus("Email verification failed. The link may be expired or invalid.");
+        setVerificationStatus(
+          "Email verification failed. The link may be expired or invalid."
+        );
       }
     };
 

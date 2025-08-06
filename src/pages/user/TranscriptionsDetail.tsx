@@ -726,7 +726,7 @@ const MeetingDetailPage = () => {
               <div className="overflow-y-auto max-h-72">
                 <div className="space-y-4">
                   {recentTranscriptions.map((item) => (
-                    <Link to={`/dashboard/meeting/${item._id}`} key={item._id}>
+                    <Link to={`/dashboard/transcription/${item._id}`} key={item._id}>
                       {" "}
                       <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors my-4">
                         <div className="flex items-center space-x-4 my-2">

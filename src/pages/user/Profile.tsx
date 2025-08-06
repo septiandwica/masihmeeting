@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
 const ProfilePage: React.FC = () => {
@@ -12,8 +12,8 @@ const ProfilePage: React.FC = () => {
     }
   }, [user, isLoading, fetchUserProfile]);
   const handleLogout = () => {
-    logout(); 
-    navigate("/"); 
+    logout();
+    navigate("/");
   };
   if (isLoading) {
     return (

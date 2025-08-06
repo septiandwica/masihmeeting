@@ -4,17 +4,18 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/admin/Dashboard";
-import Features from "./pages/Features";
-import Pricing from "./pages/Pricing";
-import Register from "./pages/Register";
-import VerifyEmail from "./pages/VerifyEmail";
-import ProfilePage from "./pages/Profile";
+import Landing from "./pages/landing/Landing";
+import Login from "./pages/auth/Login";
+import Dashboard from "./pages/user/Dashboard";
+import AdminDashboard from "./pages/admin/UserManagement";
+import Features from "./pages/landing/Features";
+import Pricing from "./pages/landing/Pricing";
+import Register from "./pages/auth/Register";
+import VerifyEmail from "./pages/auth/VerifyEmail";
+import ProfilePage from "./pages/user/Profile";
 import TranscriptionDetail from "./pages/user/TranscriptionsDetail";
 import TranscriptionList from "./pages/user/TranscriptionList";
+import ErrorPage from "./pages/error/error";
 
 function App() {
   return (
@@ -74,6 +75,10 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+                <Route path="/404" element={<ErrorPage />} />
+                  <Route path="/error" element={<ErrorPage />} />
+                  
+                  <Route path="*" element={<ErrorPage />} />
             </Routes>
             <Footer />
           </div>

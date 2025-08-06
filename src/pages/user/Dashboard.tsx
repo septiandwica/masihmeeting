@@ -12,13 +12,15 @@ import {
   X,
   CheckCircle,
 } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   transcribeYouTube,
   transcribeAudio,
   transcribeVideo,
   getUserTranscriptions,
-} from "../services/transcribeApi";
+} from "../../services/transcribeApi";
+
+import { getUserStats } from "../../services/adminApi";
 import { Link } from "react-router-dom";
 
 interface UploadedFile {
@@ -32,36 +34,39 @@ interface UploadedFile {
 }
 
 const Dashboard: React.FC = () => {
-  const { user, setUser} = useAuth();
+  const { user, setUser } = useAuth();
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [recentTranscriptions, setRecentTranscriptions] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [totalTranscriptions, setTotalTranscriptions] = useState<number>(0);
-   const [isLoading, setIsLoading] = useState(true);
-useEffect(() => {
-  const savedUser = localStorage.getItem("user");
-  const savedToken = localStorage.getItem("token");
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (savedUser && savedToken) {
-    const parsedUser = JSON.parse(savedUser);
-    setUser({ ...parsedUser, token: savedToken });
-  } else {
-    console.error("Token or user is missing from localStorage");
-  }
+  const [quizMade, setQuizMade] = useState<number>(0);
+  const [averagePercentage, setAveragePercentage] = useState<number>(0);
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    const savedToken = localStorage.getItem("token");
 
-  setIsLoading(false);
-}, []);
+    if (savedUser && savedToken) {
+      const parsedUser = JSON.parse(savedUser);
+      setUser({ ...parsedUser, token: savedToken });
+    } else {
+      console.error("Token or user is missing from localStorage");
+    }
+
+    setIsLoading(false);
+  }, []);
   useEffect(() => {
     // Fetch user transcriptions on mount
     if (user?.id) {
       const fetchTranscriptions = async () => {
         try {
           const token = user?.token || "";
-if (!token) {
-  return;
-}
+          if (!token) {
+            return;
+          }
           const response = await getUserTranscriptions({
             userId: user.id,
             token: user.token || "",
@@ -77,6 +82,53 @@ if (!token) {
           console.error("Failed to fetch transcriptions:", error);
         }
       };
+      fetchTranscriptions();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user?.id) {
+      // Fetch User Stats
+      const fetchUserStats = async () => {
+        try {
+          const token = user?.token || "";
+          const statsResponse = await getUserStats(user.id, token);
+          const { quizMade, averagePercentage } = statsResponse.data;
+
+            const averageNum = parseFloat(averagePercentage).toPrecision(2)
+
+          setQuizMade(quizMade);
+          setAveragePercentage(Number(averageNum));
+        } catch (error) {
+          console.error("Failed to fetch user stats:", error);
+        }
+      };
+
+      // Fetch User Transcriptions
+      const fetchTranscriptions = async () => {
+        try {
+          const token = user?.token || "";
+          if (!token) return;
+
+          const response = await getUserTranscriptions({
+            userId: user.id,
+            token: user.token || "",
+          });
+
+          const transcriptions = response.transcriptions;
+          const sortedTranscriptions = transcriptions.sort(
+            (a: any, b: any) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+
+          setRecentTranscriptions(sortedTranscriptions);
+          setTotalTranscriptions(sortedTranscriptions.length);
+        } catch (error) {
+          console.error("Failed to fetch transcriptions:", error);
+        }
+      };
+
+      fetchUserStats();
       fetchTranscriptions();
     }
   }, [user]);
@@ -102,82 +154,81 @@ if (!token) {
   };
 
   const handleFiles = async (files: FileList) => {
-  Array.from(files).forEach(async (file) => {
-    if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
+    Array.from(files).forEach(async (file) => {
+      if (file.type.startsWith("audio/") || file.type.startsWith("video/")) {
+        const newFile: UploadedFile = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          name: file.name,
+          type: file.type.startsWith("audio/") ? "audio" : "video",
+          size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+          status: "processing",
+        };
+
+        setUploadedFiles((prev) => [...prev, newFile]);
+
+        const token = user?.token || "";
+
+        try {
+          if (file.type.startsWith("audio/")) {
+            await transcribeAudio(file, token);
+          } else {
+            await transcribeVideo(file, token);
+          }
+
+          // Setelah selesai
+          setUploadedFiles((prev) =>
+            prev.map((f) =>
+              f.id === newFile.id
+                ? { ...f, status: "completed", duration: "2:34" }
+                : f
+            )
+          );
+        } catch (error) {
+          console.error(error);
+          setUploadedFiles((prev) =>
+            prev.map((f) =>
+              f.id === newFile.id ? { ...f, status: "error" } : f
+            )
+          );
+        }
+      }
+    });
+  };
+
+  const handleYoutubeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (youtubeUrl.trim()) {
       const newFile: UploadedFile = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        type: file.type.startsWith("audio/") ? "audio" : "video",
-        size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+        name: "YouTube Video",
+        type: "youtube",
         status: "processing",
       };
 
       setUploadedFiles((prev) => [...prev, newFile]);
-
-      const token = user?.token || "";
+      setYoutubeUrl("");
 
       try {
-        if (file.type.startsWith("audio/")) {
-          await transcribeAudio(file, token);
-        } else {
-          await transcribeVideo(file, token);
-        }
+        const token = user?.token || "";
+        await transcribeYouTube(youtubeUrl, user?.id || "", token);
 
-        // Setelah selesai
         setUploadedFiles((prev) =>
-          prev.map((f) =>
-            f.id === newFile.id
-              ? { ...f, status: "completed", duration: "2:34" }
-              : f
+          prev.map((file) =>
+            file.id === newFile.id
+              ? { ...file, status: "completed", duration: "3:45" }
+              : file
           )
         );
       } catch (error) {
         console.error(error);
         setUploadedFiles((prev) =>
-          prev.map((f) =>
-            f.id === newFile.id ? { ...f, status: "error" } : f
+          prev.map((file) =>
+            file.id === newFile.id ? { ...file, status: "error" } : file
           )
         );
       }
     }
-  });
-};
-
-const handleYoutubeSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (youtubeUrl.trim()) {
-    const newFile: UploadedFile = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      name: "YouTube Video",
-      type: "youtube",
-      status: "processing",
-    };
-
-    setUploadedFiles((prev) => [...prev, newFile]);
-    setYoutubeUrl("");
-
-    try {
-      const token = user?.token || "";
-      await transcribeYouTube(youtubeUrl, user?.id || "", token);
-
-      setUploadedFiles((prev) =>
-        prev.map((file) =>
-          file.id === newFile.id
-            ? { ...file, status: "completed", duration: "3:45" }
-            : file
-        )
-      );
-    } catch (error) {
-      console.error(error);
-      setUploadedFiles((prev) =>
-        prev.map((file) =>
-          file.id === newFile.id ? { ...file, status: "error" } : file
-        )
-      );
-    }
-  }
-};
-
+  };
 
   const removeFile = (fileId: string) => {
     setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
@@ -197,7 +248,10 @@ const handleYoutubeSubmit = async (e: React.FormEvent) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Link to="/dashboard/transcription" className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 dark:border-gray-700">
+          <Link
+            to="/dashboard/transcription"
+            className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 dark:border-gray-700"
+          >
             <div className="p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -219,6 +273,7 @@ const handleYoutubeSubmit = async (e: React.FormEvent) => {
             </div>
           </Link>
 
+         
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-xl border border-gray-200 dark:border-gray-700">
             <div className="p-6">
               <div className="flex items-center">
@@ -233,7 +288,7 @@ const handleYoutubeSubmit = async (e: React.FormEvent) => {
                       Quiz Made
                     </dt>
                     <dd className="text-2xl font-bold text-gray-900 dark:text-white">
-                      8
+                      {quizMade} 
                     </dd>
                   </dl>
                 </div>
@@ -255,7 +310,7 @@ const handleYoutubeSubmit = async (e: React.FormEvent) => {
                       Comprehension Accuracy
                     </dt>
                     <dd className="text-2xl font-bold text-gray-900 dark:text-white">
-                      99.2%
+                      {averagePercentage * 100 }%
                     </dd>
                   </dl>
                 </div>
@@ -338,7 +393,7 @@ const handleYoutubeSubmit = async (e: React.FormEvent) => {
             </h2>
             <div className="space-y-4">
               {uploadedFiles.map((file) => (
-                <Link to={`/dashboard/meeting/${file.id}`} key={file.id}>
+                <Link to={`/dashboard/transcription/${file.id}`} key={file.id}>
                   {" "}
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-center space-x-4 flex-1">
@@ -440,7 +495,10 @@ const handleYoutubeSubmit = async (e: React.FormEvent) => {
             </h2>
             <div className="space-y-4">
               {recentTranscriptions.map((item) => (
-                <Link to={`/dashboard/transcription/${item._id}`} key={item._id}>
+                <Link
+                  to={`/dashboard/transcription/${item._id}`}
+                  key={item._id}
+                >
                   {" "}
                   <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors my-4">
                     <div className="flex items-center space-x-4">

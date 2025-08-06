@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Mic, Zap, Users, ArrowRight, Play } from "lucide-react";
-import Card from "../components/FeaturedCard"; 
-import CallToAction from "../components/CallToAction";
+import Card from "../../components/FeaturedCard";
+import CallToAction from "../../components/CallToAction";
 
 const Landing: React.FC = () => {
   return (

@@ -98,48 +98,51 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        <div className="overflow-hidden bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">User List</h2>
-          {loading ? (
-            <div>Loading...</div>
-          ) : (
-            <table className="min-w-full table-auto">
-              <thead>
-                <tr className="bg-gray-100 dark:bg-gray-700">
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Name</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Email</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Role</th>
-                  <th className="px-6 py-3 text-center text-sm font-medium text-gray-900 dark:text-white">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user._id} className="border-t border-gray-200 dark:border-gray-700">
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.email}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.role}</td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleEditUser(user)}
-                        className="p-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user._id)}
-                        className="p-2 text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors"
-                      >
-                        <Trash className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+       <div className="overflow-hidden bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
+  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">User List</h2>
+  {loading ? (
+    <div>Loading...</div>
+  ) : (
+    <div className="overflow-x-auto">
+      <table className="min-w-full table-auto">
+        <thead>
+          <tr className="bg-gray-100 dark:bg-gray-700">
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Name</th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Email</th>
+            <th className="px-6 py-3 text-left text-sm font-medium text-gray-900 dark:text-white">Role</th>
+            <th className="px-6 py-3 text-center text-sm font-medium text-gray-900 dark:text-white">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr key={user._id} className="border-t border-gray-200 dark:border-gray-700">
+              <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.name}</td>
+              <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.email}</td>
+              <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{user.role}</td>
+              <td className="px-6 py-4 text-center">
+                <button
+                  onClick={() => handleEditUser(user)}
+                  className="p-2 text-blue-500 hover:text-blue-700 dark:hover:text-blue-400 transition-colors"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteUser(user._id)}
+                  className="p-2 text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors"
+                >
+                  <Trash className="h-4 w-4" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
 
-        <div className="flex justify-end mb-8">
+
+        {/* <div className="flex justify-end mb-8">
           <button
             className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
             onClick={() => setShowModal(true)}
@@ -147,7 +150,7 @@ const AdminDashboard: React.FC = () => {
             <PlusCircle className="mr-2 h-5 w-5" />
             Add New User
           </button>
-        </div>
+        </div> */}
 
         {showModal && (
           <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">

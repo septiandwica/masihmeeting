@@ -27,8 +27,6 @@ export const loginUser = async (email: string, password: string) => {
 
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("token", token);
-      console.log("Login successful: Token stored");
-
       return response.data;  
     } else {
       throw new Error("Login failed: Token or user data missing");

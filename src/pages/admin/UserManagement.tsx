@@ -30,11 +30,9 @@ const AdminDashboard: React.FC = () => {
     setError(null);
     try {
       const response = await getAllUsers(token);
-      console.log("Fetched users:", response.users);
       setUsers(response.users);
     } catch (error) {
       setError("Failed to fetch users");
-      console.error("Error fetching users:", error);
     } finally {
       setLoading(false);
     }

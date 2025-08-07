@@ -15,6 +15,12 @@ const TranscriptionList: React.FC = () => {
   const [selectedTranscriptionId, setSelectedTranscriptionId] = useState<
     string | null
   >(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [searchQuery, setSearchQuery] = useState(""); // State untuk pencarian
+  const [fileTypeFilter, setFileTypeFilter] = useState<string>("all"); // State untuk filter tipe file
+  const [startDate, setStartDate] = useState<string>(""); // State untuk tanggal mulai
+  const [endDate, setEndDate] = useState<string>(""); // State untuk tanggal akhir
 
   useEffect(() => {
     // Fetch user transcriptions on mount
@@ -38,6 +44,19 @@ const TranscriptionList: React.FC = () => {
       fetchTranscriptions();
     }
   }, [user]);
+
+  // Fungsi untuk menyaring transkripsi berdasarkan pencarian, filter tipe file, dan rentang tanggal
+  const filteredTranscriptions = recentTranscriptions.filter((item) => {
+    const matchesSearchQuery = item.title.toLowerCase().includes(searchQuery.toLowerCase()); // Menyaring berdasarkan title
+    const matchesFileType = fileTypeFilter === "all" || item.type === fileTypeFilter; // Menyaring berdasarkan tipe file
+
+    // Menyaring berdasarkan tanggal jika rentang tanggal dipilih
+    const itemDate = new Date(item.createdAt);
+    const matchesDateRange =
+      (!startDate || itemDate >= new Date(startDate)) && (!endDate || itemDate <= new Date(endDate));
+
+    return matchesSearchQuery && matchesFileType && matchesDateRange;
+  });
 
   const openDeleteModal = (id: string) => {
     setSelectedTranscriptionId(id);
@@ -66,6 +85,7 @@ const TranscriptionList: React.FC = () => {
       alert("Failed to delete transcription");
     }
   };
+  
   const handleDownload = async (transcriptionId: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -79,6 +99,13 @@ const TranscriptionList: React.FC = () => {
       const errorMessage = "Terjadi kesalahan saat mengunduh PDF transkrip";
     }
   };
+
+  const displayedTranscriptions = filteredTranscriptions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(filteredTranscriptions.length / itemsPerPage);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pt-16">
@@ -95,15 +122,69 @@ const TranscriptionList: React.FC = () => {
               All of your Transcriptions
             </h2>
 
-            {/* Check if the number of cards exceeds 10 and apply scroll if necessary */}
+            {/* Input Pencarian */}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="Search by title..."
+                className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)} // Update query saat mengetik
+              />
+            </div>
+
+            {/* Dropdown Filter Tipe File */}
+            <div className="mb-4">
+              <select
+                value={fileTypeFilter}
+                onChange={(e) => setFileTypeFilter(e.target.value)} // Update filter tipe file
+                className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
+              >
+                <option value="all">All Types</option>
+                <option value="youtube">YouTube</option>
+                <option value="upload">Audio/Video Upload</option>
+                <option value="audio">Audio</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+
+            {/* Filter Rentang Tanggal */}
+            <div className="flex space-x-4 mb-4">
+              <div className="w-full">
+                <label htmlFor="startDate" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  id="startDate"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)} // Update start date
+                  className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                />
+              </div>
+              <div className="w-full">
+                <label htmlFor="endDate" className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  id="endDate"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)} // Update end date
+                  className="w-full p-2 border border-gray-300 rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                />
+              </div>
+            </div>
+
+            {/* Check if the number of cards exceeds 20 and apply scroll if necessary */}
             <div
               className={`${
-                recentTranscriptions.length > 10
+                filteredTranscriptions.length > 20
                   ? "max-h-96 overflow-y-auto"
                   : ""
               }`}
             >
-              {recentTranscriptions.slice(0, 10).map((item) => (
+              {displayedTranscriptions.map((item) => (
                 <Link
                   to={`/dashboard/transcription/${item._id}`}
                   key={item._id}
@@ -116,15 +197,19 @@ const TranscriptionList: React.FC = () => {
                             ? "bg-red-100 dark:bg-red-900/20"
                             : item.type === "upload"
                             ? "bg-purple-100 dark:bg-purple-900/20"
-                            : "bg-blue-100 dark:bg-blue-900/20"
+                            : item.type === "audio"
+                            ? "bg-blue-100 dark:bg-blue-900/20"
+                            : "bg-green-100 dark:bg-green-900/20"
                         }`}
                       >
                         {item.type === "youtube" ? (
                           <Youtube className="h-5 w-5 text-red-600 dark:text-red-400" />
                         ) : item.type === "upload" ? (
                           <File className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                        ) : (
+                        ) : item.type === "audio" ? (
                           <Mic className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        ) : (
+                          <File className="h-5 w-5 text-green-600 dark:text-green-400" />
                         )}
                       </div>
                       <div>
@@ -167,13 +252,35 @@ const TranscriptionList: React.FC = () => {
                 </Link>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {filteredTranscriptions.length > 10 && (
+              <div className="flex justify-center space-x-4 mt-4">
+                <button
+                  onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
+                >
+                  Prev
+                </button>
+                <span className="text-gray-500 dark:text-gray-400">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Delete Confirmation Modal */}
-
         {isDeleteModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50 z-50 backdrop-blur-sm">
+          <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50 backdrop-blur-sm">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Are you sure?

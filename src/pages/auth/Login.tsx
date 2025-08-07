@@ -35,30 +35,32 @@ const Login: React.FC = () => {
 
   // Handler untuk login manual
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(""); // Reset error message
+  e.preventDefault();
+  setError(""); // Reset error message
 
-    if (!email || !password) {
-      setError("Please fill in all fields");
-      return;
-    }
+  if (!email || !password) {
+    setError("Please fill in all fields");
+    return;
+  }
 
-    const success = await login(email, password);
-    if (success) {
-      navigate("/dashboard"); // Redirect ke dashboard jika login berhasil
-    } else {
-      setError(
-        "Invalid email or password. Password must be at least 6 characters."
-      );
-    }
-  };
+  const result = await login(email, password);
+
+  if (result === true) {
+    navigate("/dashboard"); // Redirect ke dashboard jika login berhasil
+  } else if (typeof result === 'string') {
+    const parsed = JSON.parse(result)
+    setError(parsed.message); // Set error message if login returns a string
+  } else {
+    setError("Login failed. Please try again."); // Generic error if something unexpected happens
+  }
+};
 
   // Handler untuk login Google
   // Tidak perlu async/await karena fungsi googleLogin akan melakukan redirect
   const handleGoogleLogin = () => {
     // Memanggil fungsi googleLogin dari context
     // Fungsi ini akan mengarahkan browser ke endpoint Google OAuth di backend
-    googleLogin(); 
+    googleLogin();
     // Tidak ada success/error handling di sini karena browser akan redirect
     // Penanganan callback akan dilakukan di halaman /oauth/callback
   };

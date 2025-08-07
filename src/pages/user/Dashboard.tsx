@@ -54,7 +54,7 @@ const Dashboard: React.FC = () => {
     if (savedUser && savedToken) {
       const parsedUser = JSON.parse(savedUser);
       setUser({ ...parsedUser, token: savedToken });
-    } 
+    }
     setIsLoading(false);
   }, []);
   useEffect(() => {
@@ -99,7 +99,7 @@ const Dashboard: React.FC = () => {
           setQuizMade(quizMade);
           setAveragePercentage(Number(averageNum));
         } catch (error) {
-          console.error("Failed to fetch user stats:", error);
+          
         }
       };
 
@@ -176,15 +176,16 @@ const Dashboard: React.FC = () => {
             response = await transcribeVideo(file, token);
           }
 
-          const newTranscript = response.newTranscript;
+          const newTranscript = response.transcript; // Pastikan respons transkripsi sudah berisi _id
 
           setUploadedFiles((prev) =>
             prev.map((f) =>
               f.id === temporaryId
                 ? {
                     ...f,
-                    status: "completed",
-                    _id: newTranscript._id, // Assign the real database _id
+                    status: "completed", // Perbarui status menjadi completed
+                    _id: newTranscript._id, // Masukkan _id dari respons
+                    duration: `${newTranscript.duration}s`, // Gunakan durasi yang ada
                   }
                 : f
             )
@@ -200,6 +201,7 @@ const Dashboard: React.FC = () => {
       }
     });
   };
+
   const handleDownload = async (transcriptionId: string) => {
     try {
       // Ambil token dari localStorage atau state aplikasi Anda
@@ -424,103 +426,155 @@ const Dashboard: React.FC = () => {
               Processing Files
             </h2>
             <div className="space-y-4 ">
-              {uploadedFiles.map((file) => (
-                <Link
-                  to={`/dashboard/transcription/${file._id}`}
-                  key={file._id}
-                  className="block mb-4"
-                >
-                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="flex items-center space-x-4 flex-1">
-                      <div
-                        className={`p-2 rounded-lg ${
-                          file.type === "youtube"
-                            ? "bg-red-100 dark:bg-red-900/20"
-                            : file.type === "video"
-                            ? "bg-purple-100 dark:bg-purple-900/20"
-                            : "bg-blue-100 dark:bg-blue-900/20"
-                        }`}
-                      >
-                        {file.type === "youtube" ? (
-                          <Youtube className="h-5 w-5 text-red-600 dark:text-red-400" />
-                        ) : (
-                          <File
-                            className={`h-5 w-5 ${
-                              file.type === "video"
-                                ? "text-purple-600 dark:text-purple-400"
-                                : "text-blue-600 dark:text-blue-400"
-                            }`}
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                          {file.name}
-                        </h3>
-                        <div className="flex items-center space-x-4 mt-1">
-                          {file.size && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {file.size}
-                            </p>
+              {uploadedFiles.map((file) =>
+                file._id ? (
+                  <Link
+                    to={`/dashboard/transcription/${file._id}`}
+                    key={file._id}
+                    className="block mb-4"
+                  >
+                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <div
+                          className={`p-2 rounded-lg ${
+                            file.type === "youtube"
+                              ? "bg-red-100 dark:bg-red-900/20"
+                              : file.type === "video"
+                              ? "bg-purple-100 dark:bg-purple-900/20"
+                              : "bg-blue-100 dark:bg-blue-900/20"
+                          }`}
+                        >
+                          {file.type === "youtube" ? (
+                            <Youtube className="h-5 w-5 text-red-600 dark:text-red-400" />
+                          ) : file.type === "video" ? (
+                            <File className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                          ) : (
+                            <Mic className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                           )}
-                          {file.duration && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Duration: {file.duration}
-                            </p>
-                          )}
-                          <div className="flex items-center space-x-2">
-                            {file.status === "processing" && (
-                              <>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                            {file.name}
+                          </h3>
+                          <div className="flex items-center space-x-4 mt-1">
+                            {file.size && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {file.size}
+                              </p>
+                            )}
+                            {file.duration && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Duration: {file.duration}
+                              </p>
+                            )}
+                            <div className="flex items-center space-x-2">
+                              {file.status === "processing" && (
                                 <span className="text-xs text-blue-600 dark:text-blue-400">
                                   Processing...
                                 </span>
-                              </>
-                            )}
-                            {file.status === "completed" && (
-                              <>
+                              )}
+                              {file.status === "completed" && (
                                 <CheckCircle className="w-4 h-4 text-green-500" />
-                                <span className="text-xs text-green-600 dark:text-green-400">
-                                  Completed
-                                </span>
-                              </>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        {file.status === "completed" && (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (file._id) {
+                                  handleDownload(file._id); // Trigger download function
+                                } else {
+                                  console.error(
+                                    "File ID is missing for download."
+                                  );
+                                }
+                              }}
+                              className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            >
+                              <Download className="h-4 w-4" />
+                            </button>
+                            <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                              <Share2 className="h-4 w-4" />
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => removeFile(file.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {file.status === "completed" && (
-                        <>
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (file._id) {
-                                handleDownload(file._id);
-                              } else {
-                                console.error(
-                                  "File ID is missing for download."
-                                );
-                              }
-                            }}
-                            className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                          >
-                            <Download className="h-4 w-4" />
-                          </button>
-                          <button className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                            <Share2 className="h-4 w-4" />
-                          </button>
-                        </>
-                      )}
-                      <button
-                        onClick={() => removeFile(file.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
+                  </Link>
+                ) : (
+                  <div key={file.id} className="block mb-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-4 flex-1">
+                        <div
+                          className={`p-2 rounded-lg ${
+                            file.type === "youtube"
+                              ? "bg-red-100 dark:bg-red-900/20"
+                              : file.type === "video"
+                              ? "bg-purple-100 dark:bg-purple-900/20"
+                              : "bg-blue-100 dark:bg-blue-900/20"
+                          }`}
+                        >
+                          {file.type === "youtube" ? (
+                            <Youtube className="h-5 w-5 text-red-600 dark:text-red-400" />
+                          ) : file.type === "video" ? (
+                            <File className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                          ) : (
+                            <Mic className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                            {file.name}
+                          </h3>
+                          <div className="flex items-center space-x-4 mt-1">
+                            {file.size && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {file.size}
+                              </p>
+                            )}
+                            {file.duration && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                Duration:{" "}
+                                {Math.floor(Number(file.duration) / 60)}m{" "}
+                                {Number(file.duration) % 60}s
+                              </p>
+                            )}
+                            <div className="flex items-center space-x-2">
+                              {file.status === "processing" && (
+                                <span className="text-xs text-blue-600 dark:text-blue-400">
+                                  Processing...
+                                </span>
+                              )}
+                              {file.status === "completed" && (
+                                <CheckCircle className="w-4 h-4 text-green-500" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => removeFile(file.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </Link>
-              ))}
+                )
+              )}
             </div>
           </div>
         )}

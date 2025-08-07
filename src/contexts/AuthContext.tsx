@@ -20,7 +20,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<string | boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   googleLogin: () => void;
   verifyEmail: (token: string) => Promise<boolean>;
@@ -74,26 +74,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    try {
-      const response = await loginUser(email, password);
-      if (response.success) {
-        const { user: userData, token } = response; 
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        localStorage.setItem("token", token);
-        setIsLoading(false);
-        return true;
-      } else {
-        setIsLoading(false);
-        return false;
-      }
-    } catch (error) {
+const login = async (email: string, password: string): Promise<boolean | string> => {
+  setIsLoading(true);
+  try {
+    const response = await loginUser(email, password);
+    if (response.success) {
+      const { user: userData, token } = response;
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", token);
+      setIsLoading(false);
+      return true;
+    } else {
       setIsLoading(false);
       return false;
     }
-  };
+  } catch (error) {
+    setIsLoading(false);
+
+    return error instanceof Error ? error.message : JSON.stringify(error);
+  }
+};
+
 
   const register = async (
     name: string,

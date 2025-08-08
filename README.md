@@ -22,9 +22,20 @@ MasihMeeting transforms long meetings into sharp insights, summaries, and smart 
 - **Authentication:** JWT, Google OAuth
 - **Markdown Support:** react-markdown, remark-gfm
 
+## Repositories
+
+- **Frontend:** [https://github.com/septiandwica/masihmeeting.git](https://github.com/septiandwica/masihmeeting.git)
+- **Backend Express:** [https://github.com/septiandwica/masihmeeting_be.git](https://github.com/septiandwica/masihmeeting_be.git)
+- **Backend Python:** [https://github.com/MDAnandaB35/MasihMikir_AI_Backend](https://github.com/MDAnandaB35/MasihMikir_AI_Backend)
+
+## Deployment
+
+- **Live Application:** [http://masihmeeting.ddns.net/](http://masihmeeting.ddns.net/)
+
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v18 or higher recommended)
 - npm or yarn
 
@@ -32,7 +43,7 @@ MasihMeeting transforms long meetings into sharp insights, summaries, and smart 
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/septiandwica/masihmeeting.git
    cd MasihMeeting
    ```
 2. Install dependencies:
@@ -50,6 +61,7 @@ MasihMeeting transforms long meetings into sharp insights, summaries, and smart 
 4. Open [http://localhost:5173](http://localhost:5173) to view the app in your browser.
 
 ### Build for Production
+
 ```bash
 npm run build
 # or
@@ -57,6 +69,7 @@ yarn build
 ```
 
 ### Linting
+
 ```bash
 npm run lint
 # or
@@ -83,4 +96,4 @@ Contributions are welcome! Please open issues or submit pull requests for improv
 
 ---
 
-*MasihMeeting — Transforming meetings into actionable insights.*
+_MasihMeeting — Transforming meetings into actionable insights._

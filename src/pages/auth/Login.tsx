@@ -11,7 +11,6 @@ const Login: React.FC = () => {
   const [error, setError] = useState("");
   const [showRegistrationAlert, setShowRegistrationAlert] = useState(false);
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
-  // Pastikan googleLogin diimpor dari useAuth
   const { login, googleLogin, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -33,36 +32,56 @@ const Login: React.FC = () => {
     }
   }, []);
 
+  
+
+
+
+  const validateEmail = (email: string) => {
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailPattern.test(email);
+  };
   // Handler untuk login manual
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError(""); // Reset error message
+    e.preventDefault();
+    setError(""); // Reset error message
+  
+    // Validate if email and password fields are filled
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+  
+    // Validate email format
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+  
+    try {
+      // Attempt to login
+      const result = await login(email, password);
+  
+      // Handle login success
+      if (result === true) {
+        navigate("/dashboard"); // Redirect to dashboard if login successful
+      } else if (typeof result === 'string') {
+        // If result is an error message, display it
+        const parsed = JSON.parse(result);
+        setError(parsed.message); // Set error message from the backend
+      } else {
+        // Generic error if something unexpected happens
+        setError("Login failed. Please try again.");
+      }
+    } catch (error) {
+      // Handle network or other types of errors (e.g., server not reachable)
+      console.error("Network error or server issue:", error);
+      setError("An error occurred while processing your login. Please try again later.");
+    }
+  };
 
-  if (!email || !password) {
-    setError("Please fill in all fields");
-    return;
-  }
 
-  const result = await login(email, password);
-
-  if (result === true) {
-    navigate("/dashboard"); // Redirect ke dashboard jika login berhasil
-  } else if (typeof result === 'string') {
-    const parsed = JSON.parse(result)
-    setError(parsed.message); // Set error message if login returns a string
-  } else {
-    setError("Login failed. Please try again."); // Generic error if something unexpected happens
-  }
-};
-
-  // Handler untuk login Google
-  // Tidak perlu async/await karena fungsi googleLogin akan melakukan redirect
   const handleGoogleLogin = () => {
-    // Memanggil fungsi googleLogin dari context
-    // Fungsi ini akan mengarahkan browser ke endpoint Google OAuth di backend
     googleLogin();
-    // Tidak ada success/error handling di sini karena browser akan redirect
-    // Penanganan callback akan dilakukan di halaman /oauth/callback
   };
 
   return (
@@ -82,7 +101,6 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        {/* Alert untuk registrasi berhasil */}
         {showRegistrationAlert && (
           <div className="fixed top-4 right-4 z-50 w-80 p-4 rounded-lg shadow-md transition-all opacity-100 duration-300 transform translate-y-0">
             <Alert
@@ -95,7 +113,6 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        {/* Alert untuk verifikasi email berhasil */}
         {showVerificationAlert && (
           <div className="fixed top-4 right-4 z-50 w-80 p-4 rounded-lg shadow-md transition-all opacity-100 duration-300 transform translate-y-0">
             <Alert
@@ -109,12 +126,13 @@ const Login: React.FC = () => {
         )}
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 transition-colors duration-300">
-          {/* Menampilkan pesan error jika ada */}
-          {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
+         
+        
+        {error && (
+  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg">
+    {error}
+  </div>
+)}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
@@ -197,7 +215,6 @@ const Login: React.FC = () => {
             </div>
           </form>
 
-          {/* Tombol Login dengan Google */}
           <div className="mt-6 text-center">
             <button
               onClick={handleGoogleLogin} // Memanggil fungsi handleGoogleLogin

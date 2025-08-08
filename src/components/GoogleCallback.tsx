@@ -1,32 +1,32 @@
 import React, { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { handleGoogleCallback } from "../services/authApi";
-import { useAuth } from "../contexts/AuthContext"; 
+import { useAuth } from "../contexts/AuthContext";
 
 const OauthCallbackPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-  const { fetchUserProfile, setUser } = useAuth(); 
+  const { fetchUserProfile, setUser } = useAuth();
 
   useEffect(() => {
     const processGoogleLogin = async () => {
-
       if (token) {
         try {
           handleGoogleCallback(token);
 
-          await fetchUserProfile(); 
+          await fetchUserProfile();
 
-          const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+          const currentUser = JSON.parse(
+            localStorage.getItem("user") || "null"
+          );
           const currentToken = localStorage.getItem("token");
-          
+
           if (currentUser && currentToken) {
             navigate("/dashboard", { replace: true });
           } else {
             navigate("/login?error=google_login_failed", { replace: true });
           }
-
         } catch (error) {
           localStorage.removeItem("user");
           localStorage.removeItem("token");

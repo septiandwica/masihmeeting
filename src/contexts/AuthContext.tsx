@@ -52,8 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (savedUser && savedToken) {
       try {
         let parsedUser = JSON.parse(savedUser);
-        
-        if (parsedUser && parsedUser.user && typeof parsedUser.user === 'object' && parsedUser.user.id) {
+
+        if (
+          parsedUser &&
+          parsedUser.user &&
+          typeof parsedUser.user === "object" &&
+          parsedUser.user.id
+        ) {
           parsedUser = parsedUser.user;
         }
 
@@ -74,28 +79,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(false);
   }, []);
 
-const login = async (email: string, password: string): Promise<boolean | string> => {
-  setIsLoading(true);
-  try {
-    const response = await loginUser(email, password);
-    if (response.success) {
-      const { user: userData, token } = response;
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("token", token);
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<boolean | string> => {
+    setIsLoading(true);
+    try {
+      const response = await loginUser(email, password);
+      if (response.success) {
+        const { user: userData, token } = response;
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("token", token);
+        setIsLoading(false);
+        return true;
+      } else {
+        setIsLoading(false);
+        return false;
+      }
+    } catch (error) {
       setIsLoading(false);
-      return true;
-    } else {
-      setIsLoading(false);
-      return false;
+
+      return error instanceof Error ? error.message : JSON.stringify(error);
     }
-  } catch (error) {
-    setIsLoading(false);
-
-    return error instanceof Error ? error.message : JSON.stringify(error);
-  }
-};
-
+  };
 
   const register = async (
     name: string,
@@ -161,15 +168,12 @@ const login = async (email: string, password: string): Promise<boolean | string>
 
     if (savedToken) {
       try {
-        const profileData = await getUserProfileApi(savedToken); 
-        
-        if (profileData && profileData.user) { 
+        const profileData = await getUserProfileApi(savedToken);
+
+        if (profileData && profileData.user) {
           const actualUser = { ...profileData.user, token: savedToken };
-          setUser(actualUser); 
-          localStorage.setItem(
-            "user",
-            JSON.stringify(actualUser)
-          );
+          setUser(actualUser);
+          localStorage.setItem("user", JSON.stringify(actualUser));
         } else {
           setUser(null);
           localStorage.removeItem("user");
